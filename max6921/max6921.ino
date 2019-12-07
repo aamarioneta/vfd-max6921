@@ -33,7 +33,7 @@ int group4[20] = {00,00,00,01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00};
   10
 06  09
   07
-08  20 //former 12
+08  20 //former 12, pin 12 was always brighter than the others, don't know why
   11
 */
 int d[10][20]={
@@ -50,7 +50,6 @@ int d[10][20]={
   {00,00,00,00,00,00,01,00,00,00,00,01,01,01,01,01,01,00,00,00},//8
   {00,00,00,00,00,00,01,00,00,00,00,01,01,01,00,01,01,00,00,00} //9
 };
-//{00,00,00,00,00,00,00,00,00,00,00,01,01,01,01,01,00,00,00,00},//2
 int nr = 1200;
 int nrclk = 0;
  
@@ -68,14 +67,6 @@ void loop() {
   writeDigit(group2, d[(int)((nr / 100) % 10)]);
   writeDigit(group3, d[(int)((nr / 10) % 10)]);
   writeDigit(group4, d[(int)((nr / 1) % 10)]);
-/*
-  writeNr(
-    d[(int)((nr / 1000) % 10)],
-    d[(int)((nr / 100) % 10)],
-    d[(int)((nr / 10) % 10)],
-    d[(int)((nr / 1) % 10)]
-  );
-*/
   if (nrclk % 20 == 0) nr++;
   nrclk++;
   delayMicroseconds(DELAY);
@@ -96,18 +87,3 @@ void writeDigit(int group[20], int d[20]) {
   digitalWrite(load, LOW);
   delayMicroseconds(DELAY);
 }
-/*
-void writeNr(int d1[20], int d2[20], int d3[20], int d4[20]) {
-  digitalWrite(clk, LOW);
-  for (int i = 19; i >= 0; i--) {
-    digitalWrite(din, group1[i] | group2[i] | group3[i] | group4[i] | d1[i] | d2[i] | d3[i] | d4[i]);
-    delayMicroseconds(DELAY);
-    digitalWrite(clk, HIGH);
-    delayMicroseconds(DELAY);
-    digitalWrite(clk, LOW);
-  }
-  digitalWrite(load, HIGH);
-  delayMicroseconds(DELAY);
-  digitalWrite(load, LOW);
-  delayMicroseconds(DELAY);
-}*/
