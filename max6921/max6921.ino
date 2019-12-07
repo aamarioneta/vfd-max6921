@@ -15,8 +15,8 @@ static const uint8_t D10  = 1;
 
 int DELAY = 10;
 int clk = D8;
-int load = 5;
-int din = 4;
+int load = D1;
+int din = D2;
 /*
 Group 1: Pin 26
 Group 2: Pin 25
