@@ -21,6 +21,13 @@ static const uint8_t D7   = 13;
 static const uint8_t D8   = 15;
 static const uint8_t D9   = 3;
 static const uint8_t D10  = 1;
+static const uint8_t SUNDAY = 0;
+static const uint8_t MONDAY = 1;
+static const uint8_t TUESDAY = 2;
+static const uint8_t WEDNESDAY = 3;
+static const uint8_t THURSDAY = 4;
+static const uint8_t FRIDAY = 5;
+static const uint8_t SATURDAY = 6;
 
 int DELAY = 2;
 int clk = D8;
@@ -98,18 +105,18 @@ void setup() {
 }
  
 void loop() {
-  writeDigit(hourTens, d[(int)(hour / 10)], dayOfWeek == 2 ? day : off);
-  writeDigit(hourOnes, d[hour % 10], dayOfWeek == 3 ? day : off);
-  writeDigit(minuteTens, d[(int)(minute / 10)], dayOfWeek == 5 ? day : off);
-  writeDigit(minuteOnes, d[minute % 10], dayOfWeek == 6 ? day : off);
+  writeDigit(hourTens, d[(int)(hour / 10)], dayOfWeek == TUESDAY ? day : off);
+  writeDigit(hourOnes, d[hour % 10], dayOfWeek == WEDNESDAY ? day : off);
+  writeDigit(minuteTens, d[(int)(minute / 10)], dayOfWeek == FRIDAY ? day : off);
+  writeDigit(minuteOnes, d[minute % 10], dayOfWeek == SATURDAY ? day : off);
   writeDigit(dayTens, d[(int)(dayOfMonth / 10)], off);
   writeDigit(dayOnes, d[dayOfMonth % 10], off);
   writeDigit(monthTens, d[(int)(month / 10)], off);
   writeDigit(monthOnes, d[month % 10], off);
 
-  writeDigit(groupSunday, off, dayOfWeek == 0 ? day : off);
-  writeDigit(groupMonday, off, dayOfWeek == 1 ? day : off);
-  writeDigit(groupThursday, allOn, dayOfWeek == 4 ? day : off);
+  writeDigit(groupSunday, off, dayOfWeek == SUNDAY ? day : off);
+  writeDigit(groupMonday, off, dayOfWeek == MONDAY ? day : off);
+  writeDigit(groupThursday, allOn, dayOfWeek == THURSDAY ? day : off);
   
   // update ntp time every minute
   if(millis() > time_1 + 60*1000){
