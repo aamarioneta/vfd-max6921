@@ -26,22 +26,49 @@ int DELAY = 2;
 int clk = D8;
 int load = D1;
 int din = D2;
+
+int second = 0;
+int hour = 20;
+int minute = 22;
+int year;
+int month;
+int dayOfMonth;
+int time_1;
+int dayOfWeek = 0;
+
 /*
 Group 1: Pin 26
 Group 2: Pin 25
 Group 3: Pin 24
 Group 4: Pin 23
 */
-/* Pin No         26 25 24 23 22 21 20 19 18 17 12 11 10  9  8  7  6  5  4  3 */
-/*   OUTx          0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 */ 
-int group1[20] = {01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00};
-int group2[20] = {00,01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00};
-int group3[20] = {00,00,01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00};
-int group4[20] = {00,00,00,01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00};
-int group5[20] = {00,00,00,00,00,00,00,00,00,00,01,00,00,00,00,00,00,00,00,00};
-int group6[20] = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,01};
-int group7[20] = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,01,00};
-int group8[20] = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,01,00,00};
+/*   OUTx                 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 */ 
+/* Pin No                26 25 24 23 22 21 20 19 18 17 12 11 10  9  8  7  6  5  4  3 */
+int hourTens[20]      = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int hourOnes[20]      = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int minuteTens[20]    = { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int minuteOnes[20]    = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int dayTens[20]       = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int dayOnes[20]       = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+int monthTens[20]     = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
+int monthOnes[20]     = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0};
+int groupSunday[20]   = { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int groupMonday[20]   = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int groupThursday[20] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int d[10][20]={
+/* Pin No 
+                         26 25 24 23 22 21 20 19 18 17 12 11 10  9  8  7  6  5  4  3 */
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0},//0
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},//1
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},//2
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0},//3
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0},//4
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0},//5
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0},//6
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0},//7
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0},//8
+                        { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0} //9
+};
 
 /* Pin No / Segments
   10
@@ -50,31 +77,12 @@ int group8[20] = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,01,00,00};
 08  20 //former 12, pin 12 was always brighter than the others, don't know why
   11
 */
-int d[10][20]={
-/* Pin No 
-   26 25 24 23 22 21 20 19 18 17 12 11 10  9  8  7  6  5  4  3 */
-  {00,00,00,00,00,00,01,00,00,00,00,01,01,01,01,00,01,00,00,00},//0
-  {00,00,00,00,00,00,01,00,00,00,00,00,00,01,00,00,00,00,00,00},//1
-  {00,00,00,00,00,00,00,00,00,00,00,01,01,01,01,01,00,00,00,00},//2
-  {00,00,00,00,00,00,01,00,00,00,00,01,01,01,00,01,00,00,00,00},//3
-  {00,00,00,00,00,00,01,00,00,00,00,00,00,01,00,01,01,00,00,00},//4
-  {00,00,00,00,00,00,01,00,00,00,00,01,01,00,00,01,01,00,00,00},//5
-  {00,00,00,00,00,00,01,00,00,00,00,01,01,00,01,01,01,00,00,00},//6
-  {00,00,00,00,00,00,01,00,00,00,00,00,01,01,00,00,00,00,00,00},//7
-  {00,00,00,00,00,00,01,00,00,00,00,01,01,01,01,01,01,00,00,00},//8
-  {00,00,00,00,00,00,01,00,00,00,00,01,01,01,00,01,01,00,00,00} //9
-};
-int day[20] = {00,00,00,00,01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00}; //Day
-int off[20] = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00}; //Day
 
-int nr = 1200;
-int second = 0;
-int hour = 20;
-int minute = 22;
-int year;
-int month;
-int dayOfMonth;
-int time_1;
+/* Pin No 
+                 26 25 24 23 22 21 20 19 18 17 12 11 10  9  8  7  6  5  4  3 */
+int day[20]   = {00,00,00,00,01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00}; //Day
+int off[20]   = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00};
+int allOn[20] = {00,00,00,00,00,00,01,00,00,00,00,01,01,01,01,01,01,00,00,00};
 
 void setup() {
   Serial.begin(115200);
@@ -86,29 +94,29 @@ void setup() {
   digitalWrite(din, LOW);
   connectWifi();
   getInternetTime();
+  time_1 = millis();
 }
  
 void loop() {
-  writeDigit(group1, d[(int)(hour / 10)], day);
-  writeDigit(group2, d[hour % 10], off);
-  writeDigit(group3, d[(int)(minute / 10)], off);
-  writeDigit(group4, d[minute % 10], off);
+  writeDigit(hourTens, d[(int)(hour / 10)], dayOfWeek == 2 ? day : off);
+  writeDigit(hourOnes, d[hour % 10], dayOfWeek == 3 ? day : off);
+  writeDigit(minuteTens, d[(int)(minute / 10)], dayOfWeek == 5 ? day : off);
+  writeDigit(minuteOnes, d[minute % 10], dayOfWeek == 6 ? day : off);
+  writeDigit(dayTens, d[(int)(dayOfMonth / 10)], off);
+  writeDigit(dayOnes, d[dayOfMonth % 10], off);
+  writeDigit(monthTens, d[(int)(month / 10)], off);
+  writeDigit(monthOnes, d[month % 10], off);
 
-  writeDigit(group5, d[(int)(dayOfMonth / 10)], off);
-  writeDigit(group6, d[dayOfMonth % 10], off);
-  writeDigit(group7, d[(int)(month / 10)], off);
-  writeDigit(group8, d[month % 10], off);
-
-
-  // update time every minute
+  writeDigit(groupMonday, off, dayOfWeek == 1 ? day : off);
+  writeDigit(groupThursday, off, dayOfWeek == 4 ? day : off);
+  
+  // update ntp time every minute
   if(millis() > time_1 + 60*1000){
     time_1 = millis();
     getInternetTime();
   }
- 
   delayMicroseconds(DELAY);
 }
-
 
 void getInternetTime() {
   timeClient.update();
@@ -120,7 +128,23 @@ void getInternetTime() {
   hour = timeClient.getHours();
   minute = timeClient.getMinutes();
   second = timeClient.getSeconds();
-  time_1 = millis();
+  dayOfWeek = timeClient.getDay();
+  Serial.print((int)(hour / 10));
+  Serial.print(" ");
+  Serial.print(hour % 10);
+  Serial.print(" ");
+  Serial.print((int)(minute / 10));
+  Serial.print(" ");
+  Serial.print(minute % 10);
+  Serial.print(" ");
+  Serial.print((int)(dayOfMonth / 10));
+  Serial.print(" ");
+  Serial.print(dayOfMonth % 10);
+  Serial.print(" ");
+  Serial.print((int)(month / 10));
+  Serial.print(" ");
+  Serial.print(month % 10);
+  Serial.println("");
 }
 
 void writeDigit(int group[20], int d[20], int dayOn[20]) {
