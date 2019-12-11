@@ -107,8 +107,9 @@ void loop() {
   writeDigit(monthTens, d[(int)(month / 10)], off);
   writeDigit(monthOnes, d[month % 10], off);
 
+  writeDigit(groupSunday, off, dayOfWeek == 0 ? day : off);
   writeDigit(groupMonday, off, dayOfWeek == 1 ? day : off);
-  writeDigit(groupThursday, off, dayOfWeek == 4 ? day : off);
+  writeDigit(groupThursday, allOn, dayOfWeek == 4 ? day : off);
   
   // update ntp time every minute
   if(millis() > time_1 + 60*1000){
