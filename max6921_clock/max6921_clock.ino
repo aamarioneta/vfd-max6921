@@ -1,3 +1,12 @@
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include "credentials.h"
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, 3600);//gmt+1
+
 #define LED_BUILTIN 2
 #define LED_BUILTIN_AUX 16
 
@@ -13,7 +22,7 @@ static const uint8_t D8   = 15;
 static const uint8_t D9   = 3;
 static const uint8_t D10  = 1;
 
-int DELAY = 10;
+int DELAY = 2;
 int clk = D8;
 int load = D1;
 int din = D2;
@@ -59,31 +68,59 @@ int day[20] = {00,00,00,00,01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00}; //D
 int off[20] = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00}; //Day
 
 int nr = 1200;
-int nrclk = 0;
- 
+int second = 0;
+int hour = 20;
+int minute = 22;
+int year;
+int month;
+int dayOfMonth;
+int time_1;
+
 void setup() {
+  Serial.begin(115200);
   pinMode(din, OUTPUT);
   pinMode(load, OUTPUT);
   pinMode(clk, OUTPUT);
   digitalWrite(clk, LOW);
   digitalWrite(load, LOW);
   digitalWrite(din, LOW);
+  connectWifi();
+  getInternetTime();
 }
  
 void loop() {
-  writeDigit(group1, d[(int)((nr / 1000) % 10)], day);
-  writeDigit(group2, d[(int)((nr / 100) % 10)], off);
-  writeDigit(group3, d[(int)((nr / 10) % 10)], off);
-  writeDigit(group4, d[(int)((nr / 1) % 10)], off);
+  writeDigit(group1, d[(int)(hour / 10)], day);
+  writeDigit(group2, d[hour % 10], off);
+  writeDigit(group3, d[(int)(minute / 10)], off);
+  writeDigit(group4, d[minute % 10], off);
 
-  writeDigit(group5, d[0], off);
-  writeDigit(group6, d[8], off);
-  writeDigit(group7, d[1], off);
-  writeDigit(group8, d[2], off);
-  
-  if (nrclk % 20 == 0) nr++;
-  nrclk++;
+  writeDigit(group5, d[(int)(dayOfMonth / 10)], off);
+  writeDigit(group6, d[dayOfMonth % 10], off);
+  writeDigit(group7, d[(int)(month / 10)], off);
+  writeDigit(group8, d[month % 10], off);
+
+
+  // update time every minute
+  if(millis() > time_1 + 60*1000){
+    time_1 = millis();
+    getInternetTime();
+  }
+ 
   delayMicroseconds(DELAY);
+}
+
+
+void getInternetTime() {
+  timeClient.update();
+  Serial.print("Got ntp time: ");
+  Serial.println(timeClient.getFormattedDate());  
+  year = timeClient.getFormattedDate().substring(0,4).toInt();
+  month = timeClient.getFormattedDate().substring(5,7).toInt();
+  dayOfMonth = timeClient.getFormattedDate().substring(8,10).toInt();
+  hour = timeClient.getHours();
+  minute = timeClient.getMinutes();
+  second = timeClient.getSeconds();
+  time_1 = millis();
 }
 
 void writeDigit(int group[20], int d[20], int dayOn[20]) {
@@ -100,4 +137,17 @@ void writeDigit(int group[20], int d[20], int dayOn[20]) {
   delayMicroseconds(DELAY);
   digitalWrite(load, LOW);
   delayMicroseconds(DELAY);
+}
+
+void connectWifi() {
+  WiFi.begin(STASSID, STAPSK);
+  WiFi.mode(WIFI_STA);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.print("Connected to ");
+  Serial.println(STASSID);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 }
