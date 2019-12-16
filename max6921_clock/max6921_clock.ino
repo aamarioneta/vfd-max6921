@@ -29,7 +29,7 @@ static const uint8_t THURSDAY = 4;
 static const uint8_t FRIDAY = 5;
 static const uint8_t SATURDAY = 6;
 
-int DELAY = 1;
+int DELAY = 10000;
 int clk = D8;
 int load = D1;
 int din = D2;
@@ -119,59 +119,57 @@ void loop() {
   writeDigit(groupThursday, allOn, dayOfWeek == THURSDAY ? day : off);
   writeDigit(minuteTens, d[(int)(minute / 10)], dayOfWeek == FRIDAY ? day : off);
   writeDigit(minuteOnes, d[minute % 10], dayOfWeek == SATURDAY ? day : off);
+
+  writeDigit(minuteOnes, off, off);
   
+  delayMicroseconds(DELAY);
   
   // update ntp time every minute
   if(millis() > time_1 + 60*1000){
     time_1 = millis();
     getInternetTime();
   }
-  delayMicroseconds(DELAY);
+}
+
+void blank(){
+  /*
+  writeDigit(dayTens, off, off);
+  writeDigit(dayOnes, off, off);
+  writeDigit(monthTens, off, off);
+  writeDigit(monthOnes, off, off);
+
+
+  writeDigit(groupSunday, off, off);
+  writeDigit(groupMonday, off, off);
+
+  writeDigit(hourTens, off, off);
+  writeDigit(hourOnes, off, off);
+  writeDigit(groupThursday, off, off);
+  writeDigit(minuteTens, off, off);
+  */
+  writeDigit(minuteOnes, off, off);
 }
 
 void getInternetTime() {
+  blank();
   timeClient.update();
-  Serial.print("Got ntp time: ");
-  Serial.println(timeClient.getFormattedDate());  
   year = timeClient.getFormattedDate().substring(0,4).toInt();
   month = timeClient.getFormattedDate().substring(5,7).toInt();
   dayOfMonth = timeClient.getFormattedDate().substring(8,10).toInt();
   hour = timeClient.getHours();
   minute = timeClient.getMinutes();
-  second = timeClient.getSeconds();
   dayOfWeek = timeClient.getDay();
-  Serial.print((int)(hour / 10));
-  Serial.print(" ");
-  Serial.print(hour % 10);
-  Serial.print(" ");
-  Serial.print((int)(minute / 10));
-  Serial.print(" ");
-  Serial.print(minute % 10);
-  Serial.print(" ");
-  Serial.print((int)(dayOfMonth / 10));
-  Serial.print(" ");
-  Serial.print(dayOfMonth % 10);
-  Serial.print(" ");
-  Serial.print((int)(month / 10));
-  Serial.print(" ");
-  Serial.print(month % 10);
-  Serial.println("");
 }
 
 void writeDigit(int group[20], int d[20], int dayOn[20]) {
   digitalWrite(clk, LOW);
-  delayMicroseconds(DELAY);
   for (int i = 19; i >= 0; i--) {
     digitalWrite(din, group[i] | d[i] | dayOn[i]);
-    delayMicroseconds(DELAY);
     digitalWrite(clk, HIGH);
-    delayMicroseconds(DELAY);
     digitalWrite(clk, LOW);
   }
   digitalWrite(load, HIGH);
-  delayMicroseconds(DELAY);
   digitalWrite(load, LOW);
-  delayMicroseconds(DELAY);
 }
 
 void connectWifi() {
