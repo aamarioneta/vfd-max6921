@@ -122,12 +122,12 @@ void loop() {
 
   writeDigit(minuteOnes, off, off);
   
-  delayMicroseconds(DELAY);
-  
   // update ntp time every minute
   if(millis() > time_1 + 60*1000){
     time_1 = millis();
     getInternetTime();
+  } else {
+    delayMicroseconds(DELAY);
   }
 }
 
