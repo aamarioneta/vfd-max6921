@@ -37,10 +37,12 @@ int din = D2;
 int second = 0;
 int hour = 20;
 int minute = 22;
+int seconds = 0;
 int year;
 int month;
 int dayOfMonth;
 int time_1;
+int millisElapsed;
 int dayOfWeek = 0;
 
 /*
@@ -102,6 +104,7 @@ void setup() {
   connectWifi();
   getInternetTime();
   time_1 = millis();
+  millisElapsed = millis();
 }
  
 void loop() {
@@ -109,7 +112,6 @@ void loop() {
   writeDigit(dayOnes, d[dayOfMonth % 10], off);
   writeDigit(monthTens, d[(int)(month / 10)], off);
   writeDigit(monthOnes, d[month % 10], off);
-
 
   writeDigit(groupSunday, off, dayOfWeek == SUNDAY ? day : off);
   writeDigit(groupMonday, off, dayOfWeek == MONDAY ? day : off);
@@ -122,42 +124,28 @@ void loop() {
 
   writeDigit(minuteOnes, off, off);
   
-  // update ntp time every minute
-  if(millis() > time_1 + 60*1000){
+  // update ntp time every hour
+  if(millis() > time_1 + 60*60*1000){
     time_1 = millis();
     getInternetTime();
   } else {
     delayMicroseconds(DELAY);
   }
-}
 
-void blank(){
-  /*
-  writeDigit(dayTens, off, off);
-  writeDigit(dayOnes, off, off);
-  writeDigit(monthTens, off, off);
-  writeDigit(monthOnes, off, off);
-
-
-  writeDigit(groupSunday, off, off);
-  writeDigit(groupMonday, off, off);
-
-  writeDigit(hourTens, off, off);
-  writeDigit(hourOnes, off, off);
-  writeDigit(groupThursday, off, off);
-  writeDigit(minuteTens, off, off);
-  */
-  writeDigit(minuteOnes, off, off);
+  if(millis() > millisElapsed + 1000){
+    millisElapsed = millis();
+    seconds = (seconds + 1) % 60;
+  }
 }
 
 void getInternetTime() {
-  blank();
   timeClient.update();
   year = timeClient.getFormattedDate().substring(0,4).toInt();
   month = timeClient.getFormattedDate().substring(5,7).toInt();
   dayOfMonth = timeClient.getFormattedDate().substring(8,10).toInt();
   hour = timeClient.getHours();
   minute = timeClient.getMinutes();
+  seconds = timeClient.getSeconds();
   dayOfWeek = timeClient.getDay();
 }
 
