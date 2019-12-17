@@ -127,6 +127,7 @@ void loop() {
   if(millis() > time_1 + 60*60*1000){
     time_1 = millis();
     getInternetTime();
+    millisElapsed = millis();
   } else {
     delayMicroseconds(DELAY);
   }
@@ -134,16 +135,25 @@ void loop() {
   if(millis() > millisElapsed + 1000){
     millisElapsed = millis();
     second = (second + 1) % 60;
+    if(second == 0){
+      minute = (minute + 1) % 60;
+      if(minute == 0){
+        hour = (hour + 1) % 24;
+        if(hour == 0){
+          dayOfWeek = (dayOfWeek + 1) % 7;
+        }
+      }
+    }
+    printTime();
   }
-  if(second == 0){
-    minute = (minute + 1) % 60;
-  }
-  if(minute == 0){
-    hour = (hour + 1) % 24;
-  }
-  if(hour == 0){
-    dayOfWeek = (dayOfWeek + 1) % 7;
-  }
+}
+
+void printTime() {
+  Serial.print(hour);
+  Serial.print(":");
+  Serial.print(minute);
+  Serial.print(":");
+  Serial.println(second);
 }
 
 void getInternetTime() {
@@ -155,6 +165,7 @@ void getInternetTime() {
   minute = timeClient.getMinutes();
   second = timeClient.getSeconds();
   dayOfWeek = timeClient.getDay();
+  Serial.println(timeClient.getFormattedDate());
 }
 
 void writeDigit(int group[20], int d[20], int dayOn[20]) {
