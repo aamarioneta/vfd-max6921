@@ -37,7 +37,6 @@ int din = D2;
 int second = 0;
 int hour = 20;
 int minute = 22;
-int seconds = 0;
 int year;
 int month;
 int dayOfMonth;
@@ -134,7 +133,16 @@ void loop() {
 
   if(millis() > millisElapsed + 1000){
     millisElapsed = millis();
-    seconds = (seconds + 1) % 60;
+    second = (second + 1) % 60;
+  }
+  if(second == 0){
+    minute = (minute + 1) % 60;
+  }
+  if(minute == 0){
+    hour = (hour + 1) % 24;
+  }
+  if(hour == 0){
+    dayOfWeek = (dayOfWeek + 1) % 7;
   }
 }
 
@@ -145,7 +153,7 @@ void getInternetTime() {
   dayOfMonth = timeClient.getFormattedDate().substring(8,10).toInt();
   hour = timeClient.getHours();
   minute = timeClient.getMinutes();
-  seconds = timeClient.getSeconds();
+  second = timeClient.getSeconds();
   dayOfWeek = timeClient.getDay();
 }
 
