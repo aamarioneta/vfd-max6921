@@ -44,13 +44,6 @@ int time_1;
 int millisElapsed;
 int dayOfWeek = 0;
 
-/*
-Group 1: Pin 26
-Group 2: Pin 25
-Group 3: Pin 24
-Group 4: Pin 23
-*/
-/*   OUTx                 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 */ 
 /* Pin No                26 25 24 23 22 21 20 19 18 17 12 11 10  9  8  7  6  5  4  3 */
 int hourTens[20]      = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int hourOnes[20]      = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
@@ -80,9 +73,9 @@ int d[10][20]={
 
 /* Pin No / Segments
   10
-06  09
-  07
-08  20 //former 12, pin 12 was always brighter than the others, don't know why
+17  09
+  19
+03  07 //former 12, pin 12 was always brighter than the others, don't know why
   11
 */
 
