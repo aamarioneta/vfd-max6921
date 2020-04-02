@@ -4,8 +4,14 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
+#include <Timezone.h>    // https://github.com/JChristensen/Timezone
+// Central European Time (Frankfurt, Paris)
+TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
+TimeChangeRule CET = {"CET ", Last, Sun, Oct, 3, 60};       // Central European Standard Time
+Timezone CE(CEST, CET);
+
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, 3600);//gmt+1
+NTPClient timeClient(ntpUDP);//gmt+1
 
 #define LED_BUILTIN 2
 #define LED_BUILTIN_AUX 16
@@ -34,12 +40,12 @@ int clk = D8;
 int load = D1;
 int din = D2;
 
-int second = 0;
-int hour = 20;
-int minute = 22;
-int year;
-int month;
-int dayOfMonth;
+int tSecond = 0;
+int tHour = 20;
+int tMinute = 22;
+int tYear;
+int tMonth;
+int tDayOfMonth;
 int time_1;
 int millisElapsed;
 int dayOfWeek = 0;
@@ -81,7 +87,7 @@ int d[10][20]={
 
 /* Pin No 
                  26 25 24 23 22 21 20 19 18 17 12 11 10  9  8  7  6  5  4  3 */
-int day[20]   = {01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00}; //Day
+int tDay[20]   = {01,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00}; //Day
 int off[20]   = {00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00};
 int allOn[20] = {00,00,00,00,00,00,00,01,00,01,00,00,01,01,00,01,00,01,00,01};
 
@@ -100,19 +106,19 @@ void setup() {
 }
  
 void loop() {
-  writeDigit(dayTens, d[(int)(dayOfMonth / 10)], off);
-  writeDigit(dayOnes, d[dayOfMonth % 10], off);
-  writeDigit(monthTens, d[(int)(month / 10)], off);
-  writeDigit(monthOnes, d[month % 10], off);
+  writeDigit(dayTens, d[(int)(tDayOfMonth / 10)], off);
+  writeDigit(dayOnes, d[tDayOfMonth % 10], off);
+  writeDigit(monthTens, d[(int)(tMonth / 10)], off);
+  writeDigit(monthOnes, d[tMonth % 10], off);
 
-  writeDigit(groupSunday, off, dayOfWeek == SUNDAY ? day : off);
-  writeDigit(groupMonday, off, dayOfWeek == MONDAY ? day : off);
+  writeDigit(groupSunday, off, dayOfWeek == SUNDAY ? tDay : off);
+  writeDigit(groupMonday, off, dayOfWeek == MONDAY ? tDay : off);
 
-  writeDigit(hourTens, d[(int)(hour / 10)], dayOfWeek == TUESDAY ? day : off);
-  writeDigit(hourOnes, d[hour % 10], dayOfWeek == WEDNESDAY ? day : off);
-  writeDigit(groupThursday, allOn, dayOfWeek == THURSDAY ? day : off);
-  writeDigit(minuteTens, d[(int)(minute / 10)], dayOfWeek == FRIDAY ? day : off);
-  writeDigit(minuteOnes, d[minute % 10], dayOfWeek == SATURDAY ? day : off);
+  writeDigit(hourTens, d[(int)(tHour / 10)], dayOfWeek == TUESDAY ? tDay : off);
+  writeDigit(hourOnes, d[tHour % 10], dayOfWeek == WEDNESDAY ? tDay : off);
+  writeDigit(groupThursday, allOn, dayOfWeek == THURSDAY ? tDay : off);
+  writeDigit(minuteTens, d[(int)(tMinute / 10)], dayOfWeek == FRIDAY ? tDay : off);
+  writeDigit(minuteOnes, d[tMinute % 10], dayOfWeek == SATURDAY ? tDay : off);
 
   writeDigit(minuteOnes, off, off);
   
@@ -127,12 +133,12 @@ void loop() {
 
   if(millis() > millisElapsed + 1000){
     millisElapsed = millis();
-    second = (second + 1) % 60;
-    if(second == 0){
-      minute = (minute + 1) % 60;
-      if(minute == 0){
-        hour = (hour + 1) % 24;
-        if(hour == 0){
+    tSecond = (tSecond + 1) % 60;
+    if(tSecond == 0){
+      tMinute = (tMinute + 1) % 60;
+      if(tMinute == 0){
+        tHour = (tHour + 1) % 24;
+        if(tHour == 0){
           dayOfWeek = (dayOfWeek + 1) % 7;
         }
       }
@@ -142,23 +148,52 @@ void loop() {
 }
 
 void printTime() {
-  Serial.print(hour);
+  Serial.print(tHour);
   Serial.print(":");
-  Serial.print(minute);
+  Serial.print(tMinute);
   Serial.print(":");
-  Serial.println(second);
+  Serial.println(tSecond);
+  
+  Serial.print("dayOfWeek:");
+  Serial.println(dayOfWeek);
+  Serial.print(" ");
+  Serial.print(tDayOfMonth);
+  Serial.print(".");
+  Serial.print(tMonth);
+  Serial.print(".");
+  Serial.println(tYear);
 }
 
 void getInternetTime() {
   timeClient.update();
-  year = timeClient.getFormattedDate().substring(0,4).toInt();
-  month = timeClient.getFormattedDate().substring(5,7).toInt();
-  dayOfMonth = timeClient.getFormattedDate().substring(8,10).toInt();
-  hour = timeClient.getHours();
-  minute = timeClient.getMinutes();
-  second = timeClient.getSeconds();
-  dayOfWeek = timeClient.getDay();
-  Serial.println(timeClient.getFormattedDate());
+  Serial.print("Got ntp time: ");
+  Serial.println(timeClient.getFormattedTime());
+  time_t utc = timeClient.getEpochTime();
+  setSummerTime(utc, "Berlin");
+}
+
+// given a Timezone object, UTC and a string description, convert and print local time with time zone
+void setSummerTime(time_t utc, const char *descr)
+{
+    char buf[40];
+    char m[4];    // temporary storage for month string (DateStrings.cpp uses shared buffer)
+    TimeChangeRule *tcr;        // pointer to the time change rule, use to get the TZ abbrev
+
+    time_t t = CE.toLocal(utc, &tcr);
+    strcpy(m, monthShortStr(month(t)));
+    sprintf(buf, "%.2d:%.2d:%.2d %s %.2d %s %d %s",
+        hour(t), minute(t), second(t), dayShortStr(weekday(t)), day(t), m, year(t), tcr -> abbrev);
+    Serial.print("Summer Time: ");
+    Serial.print(buf);
+    Serial.print(' ');
+    Serial.println(descr);
+    tHour = hour(t);
+    tMinute = minute(t);
+    tSecond = second(t);
+    tYear = year(t);
+    tMonth = month(t);
+    tDayOfMonth = day(t);    
+    dayOfWeek = weekday(t) - 1;
 }
 
 void writeDigit(int group[20], int d[20], int dayOn[20]) {
